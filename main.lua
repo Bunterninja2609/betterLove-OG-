@@ -49,10 +49,10 @@ function love.update(dt)
         cam.rotation.r1 = cam.rotation.r1 - 0.01
     end
     if love.keyboard.isDown("up")then
-        cam.rotation.r2 = cam.rotation.r2 + 0.01
+        cam.rotation.r2 = cam.rotation.r2 - 0.01
     end
     if love.keyboard.isDown("down")then
-        cam.rotation.r2 = cam.rotation.r2 - 0.01
+        cam.rotation.r2 = cam.rotation.r2 + 0.01
     end
 end
 function love.mousemoved(x, y, dx, dy)
@@ -75,8 +75,8 @@ function love.draw()
     
     love.graphics.push()
         love.graphics.volume.initialize()
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.volume.cuboid(img, -100, -100, -100, 200, 200, 200)
+            love.graphics.setColor(0.1, 0.1, 0.1)
+            love.graphics.volume.cuboid("fill", -10, -10, -10, 20, 20, 20)
             love.graphics.setColor(0, 1, 0)
             love.graphics.setLineWidth(1)
             love.graphics.volume.cuboid("line", -101, -101, -101, 202, 202, 202)

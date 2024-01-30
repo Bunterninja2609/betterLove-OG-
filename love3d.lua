@@ -108,7 +108,7 @@ love.graphics.volume.terminate = function()
         if plane.mode == "fill" or plane.mode == "line" then
             love.graphics.polygon(plane.mode, plane.usedPoints)
         else
-            love.graphics.draw(love.graphics.newSubdividedMesh(plane.mode, plane.usedPoints[1], plane.usedPoints[2],  plane.usedPoints[3], plane.usedPoints[4], plane.usedPoints[5], plane.usedPoints[6], plane.usedPoints[7], plane.usedPoints[8], 1000), 0, 0)
+            love.graphics.draw(love.graphics.newSubdividedMesh(plane.mode, plane.usedPoints[1], plane.usedPoints[2],  plane.usedPoints[3], plane.usedPoints[4], plane.usedPoints[5], plane.usedPoints[6], plane.usedPoints[7], plane.usedPoints[8], 100), 0, 0)
         end
     end
     love.graphics.setColor(1, 1, 1)
