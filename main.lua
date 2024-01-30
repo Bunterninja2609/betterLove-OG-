@@ -19,7 +19,7 @@ function love.load()
 end
 function love.update(dt)
     
-    FPS = FPS - math.floor((FPS - 1/dt)/10)
+    FPS = FPS - math.floor((FPS - 1/dt)/2)
     if love.keyboard.isDown("d")then
         cam.position.z = cam.position.z + 1 * math.sin(cam.rotation.r1)
         cam.position.x = cam.position.x + 1 * math.cos(cam.rotation.r1)
@@ -76,9 +76,10 @@ function love.draw()
     love.graphics.push()
         love.graphics.volume.initialize()
             love.graphics.setColor(1, 1, 1)
-            love.graphics.volume.cuboid("line", -100, -100, -100, 200, 200, 200)
-            love.graphics.setColor(1, 1, 0)
-            love.graphics.setPointSize(5)
+            love.graphics.volume.cuboid(img, -100, -100, -100, 200, 200, 200)
+            love.graphics.setColor(0, 1, 0)
+            love.graphics.setLineWidth(1)
+            love.graphics.volume.cuboid("line", -101, -101, -101, 202, 202, 202)
             love.graphics.volume.terminate()
     love.graphics.pop()
     
