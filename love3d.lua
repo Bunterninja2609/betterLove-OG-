@@ -135,7 +135,24 @@ love.math.get3dDistance = function(x1, y1, z1, x2, y2, z2)
         return math.sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2)
     end
 end
-
+love.graphics.volume.import = function(file)
+    if string.lower(string.match(file, "%.obj$")) ~= nil then
+        for line in love.filesystem.lines(file) do
+            local words = {}
+            for word in line:gmatch("%S+") do
+                table.insert(words, word)
+            end
+            if #words > 0 then
+                if words[1] == 'v' then
+                    local x, y, z = tonumber(words[2]), tonumber(words[3]), tonumber(words[4])
+                    love.graphics.volume.addLightSource(x, y, z, 1)
+                end
+            end
+        end
+    else
+        error("Invalid file format. please provide a .obj file")
+    end
+end
 cam = {}
 cam.position = {x = 0, y = 0, z = 0}
 cam.rotation = {r1 = 0, r2 = 0}

@@ -74,11 +74,10 @@ function love.mousemoved(x, y, dx, dy)
     love.mouse.setPosition(love.graphics:getWidth()/2, love.graphics:getHeight()/2)
 end
 function love.draw()
-    
     love.graphics.push()
     love.graphics.setBackgroundColor(0.5, 0.8, 1)
         love.graphics.volume.initialize()
-
+            love.graphics.volume.import("untitled.obj")
             love.graphics.volume.addLightSource(200*math.cos(tick), -200, 200*math.sin(tick), 400)
             love.graphics.setColor(1, 1, 1)
             --love.graphics.volume.cuboid("fill", -100, -100, -100, 200, 200, 200)
