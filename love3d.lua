@@ -1,7 +1,7 @@
 love.graphics.volume = {}
 love.graphics.volume.fov = 60;
 love.graphics.volume.renderDistance = 2^128;
-love.graphics.volume.buffer = 100000;
+love.graphics.volume.buffer = 2^256;
 love.graphics.volume.pointsList = {}
 love.graphics.volume.resolution = 20
 love.graphics.volume.lightSources = {}
@@ -40,7 +40,11 @@ love.graphics.volume.cuboid = function(mode, x, y, z, width, height, depth)
     love.graphics.volume.plane(mode, x, y, z, x, y, z + depth,   x, y + height, z + depth, x, y + height, z)
 end
 love.graphics.volume.plane = function (mode, ...)
-    points = {...}
+    if type(...) == "table" then
+        points = ...
+    else 
+        points = {...}
+    end
     local convertedPoints = {}
     local usedPoints = {}
     local plane = {
@@ -77,7 +81,7 @@ love.graphics.volume.plane = function (mode, ...)
         table.insert(plane.usedPoints, point[2])
     end
     
-    if #plane.usedPoints > 6 then
+    if #plane.usedPoints >= 6 then
         if #love.graphics.volume.pointsList > 0 then
             local t = false
             for i, otherPlanes in ipairs(love.graphics.volume.pointsList) do
@@ -112,7 +116,6 @@ love.graphics.volume.terminate = function()
         else
             love.graphics.draw(love.graphics.newSubdividedMesh(plane.mode, plane.usedPoints[1], plane.usedPoints[2],  plane.usedPoints[3], plane.usedPoints[4], plane.usedPoints[5], plane.usedPoints[6], plane.usedPoints[7], plane.usedPoints[8], 100), 0, 0)
         end
-        love.graphics.print(plane.averageLighting, plane.usedPoints[1], plane.usedPoints[2])
     end
     love.graphics.setColor(1, 1, 0)
     for _, lightSource in ipairs(love.graphics.volume.lightSources) do
@@ -135,8 +138,10 @@ love.math.get3dDistance = function(x1, y1, z1, x2, y2, z2)
         return math.sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2)
     end
 end
-love.graphics.volume.import = function(file)
+love.graphics.volume.newObj = function(file)
     if string.lower(string.match(file, "%.obj$")) ~= nil then
+        local vertices = {}
+        local faces = {}
         for line in love.filesystem.lines(file) do
             local words = {}
             for word in line:gmatch("%S+") do
@@ -144,13 +149,36 @@ love.graphics.volume.import = function(file)
             end
             if #words > 0 then
                 if words[1] == 'v' then
-                    local x, y, z = tonumber(words[2]), tonumber(words[3]), tonumber(words[4])
-                    love.graphics.volume.addLightSource(x, y, z, 1)
+                    local vertice = {}
+                    vertice.x, vertice.y, vertice.z = tonumber(words[2]), -tonumber(words[3]), tonumber(words[4])
+                    table.insert(vertices, vertice)
+                elseif words[1] == 'f' then
+                    local face = {}
+                    for i = 2, #words do
+                        local info = {}
+                        for information in words[i]:gmatch("[^/]+") do
+                            table.insert(info, information)
+                        end
+                        table.insert(face, tonumber(info[1]))
+                    end
+                    table.insert(faces, face)
                 end
             end
         end
+        return {vertices, faces}
     else
         error("Invalid file format. please provide a .obj file")
+    end
+end
+love.graphics.volume.draw = function(object, x, y, z, scale)
+    for i, face in ipairs(object[2]) do
+        local points = {}
+        for j, info in ipairs(face) do
+            table.insert(points, object[1][info].x * scale + x)
+            table.insert(points, object[1][info].y * scale + y)
+            table.insert(points, object[1][info].z * scale + z)
+        end
+        love.graphics.volume.plane("fill", points)
     end
 end
 cam = {}

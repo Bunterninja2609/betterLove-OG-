@@ -15,33 +15,36 @@ function love.load()
     love.mouse.setVisible(false)
     
     img = love.graphics.newImage("test.png")
+    object = love.graphics.volume.newObj("untitled.obj")
     FPS = 130
     tick = 0
+    gdt = 0
 end
 function love.update(dt)
+    gdt = dt
     tick = tick + dt
     FPS = FPS - math.floor((FPS - 1/dt)/2)
     if love.keyboard.isDown("d")then
-        cam.position.z = cam.position.z + 1 * math.sin(cam.rotation.r1)
-        cam.position.x = cam.position.x + 1 * math.cos(cam.rotation.r1)
+        cam.position.z = cam.position.z + dt * 20 * math.sin(cam.rotation.r1)
+        cam.position.x = cam.position.x + dt * 20 * math.cos(cam.rotation.r1)
     end
     if love.keyboard.isDown("a")then
-        cam.position.z = cam.position.z - 1 * math.sin(cam.rotation.r1)
-        cam.position.x = cam.position.x - 1 * math.cos(cam.rotation.r1)
+        cam.position.z = cam.position.z - dt * 20 * math.sin(cam.rotation.r1)
+        cam.position.x = cam.position.x - dt * 20 * math.cos(cam.rotation.r1)
     end
     if love.keyboard.isDown("w")then
-        cam.position.z = cam.position.z + 1 * math.sin(cam.rotation.r1 + math.pi/2)
-        cam.position.x = cam.position.x + 1 * math.cos(cam.rotation.r1 + math.pi/2)
+        cam.position.z = cam.position.z + dt * 20 * math.sin(cam.rotation.r1 + math.pi/2)
+        cam.position.x = cam.position.x + dt * 20 * math.cos(cam.rotation.r1 + math.pi/2)
     end
     if love.keyboard.isDown("s")then
-        cam.position.z = cam.position.z - 1 * math.sin(cam.rotation.r1 + math.pi/2)
-        cam.position.x = cam.position.x - 1 * math.cos(cam.rotation.r1 + math.pi/2)
+        cam.position.z = cam.position.z - dt * 20 * math.sin(cam.rotation.r1 + math.pi/2)
+        cam.position.x = cam.position.x - dt * 20 * math.cos(cam.rotation.r1 + math.pi/2)
     end
     if love.keyboard.isDown("space")then
-        cam.position.y = cam.position.y - 1
+        cam.position.y = cam.position.y - dt * 20
     end
     if love.keyboard.isDown("lctrl")then
-        cam.position.y = cam.position.y + 1
+        cam.position.y = cam.position.y + dt * 20
     end
     if love.keyboard.isDown("left")then
         cam.rotation.r1 = cam.rotation.r1 + 0.01
@@ -77,17 +80,19 @@ function love.draw()
     love.graphics.push()
     love.graphics.setBackgroundColor(0.5, 0.8, 1)
         love.graphics.volume.initialize()
-            love.graphics.volume.import("untitled.obj")
-            love.graphics.volume.addLightSource(200*math.cos(tick), -200, 200*math.sin(tick), 400)
+            
+            love.graphics.volume.addLightSource(200*math.cos(tick), 0, 200*math.sin(tick), 150)
             love.graphics.setColor(1, 1, 1)
+            
             --love.graphics.volume.cuboid("fill", -100, -100, -100, 200, 200, 200)
             ---[[
             for i = -10, 10 do
                 for j = -10, 10 do
-                    love.graphics.volume.cuboid("fill", 20*i, -100, 20*j, 20, 20, 20)
+                    love.graphics.volume.cuboid("fill", 20*i, 0, 20*j, 20, 20, 20)
                 end
             end
             --]]
+            love.graphics.volume.draw(object, 0, -100, 0, 100)
             love.graphics.volume.terminate()
     love.graphics.pop()
     
