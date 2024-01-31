@@ -74,8 +74,16 @@ end
 function love.draw()
     
     love.graphics.push()
+    love.graphics.setBackgroundColor(0.5, 0.8, 1)
         love.graphics.volume.initialize()
-            love.graphics.setColor(0.1, 0.1, 0.1)
+            love.graphics.setColor(1, 1, 1)
+            for i = -10, 10 do
+                for j = -10, 10 do
+                    for k = -10, 10 do
+                        love.graphics.volume.cuboid("fill",i, j, k, 1, 1, 1)
+                    end
+                end
+            end
             love.graphics.volume.cuboid("fill", -10, -10, -10, 20, 20, 20)
             love.graphics.setColor(0, 1, 0)
             love.graphics.setLineWidth(1)

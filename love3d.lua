@@ -1,5 +1,6 @@
-FOV = 60;
 love.graphics.volume = {}
+love.graphics.volume.fov = 60;
+love.graphics.volume.renderDistance = 200;
 love.graphics.volume.pointsList = {}
 love.graphics.volume.resolution = 20
 love.math.convert3dTo2d = function(x, y, z)
@@ -7,12 +8,12 @@ love.math.convert3dTo2d = function(x, y, z)
     local z2 = (x - cam.position.x) * -math.sin(cam.rotation.r1) + (z - cam.position.z) * math.cos(cam.rotation.r1)
     local z3 = (y - cam.position.y) * math.sin(cam.rotation.r2) + (z2) *  math.cos(cam.rotation.r2)
     local y2 = (y - cam.position.y) * math.cos(cam.rotation.r2) + (z2) * -math.sin(cam.rotation.r2)
-    local angleRadians = (FOV / 180) * math.pi
+    local angleRadians = (love.graphics.volume.fov / 180) * math.pi
     local result ={x2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2), y2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2)}
     return result
 end
 love.graphics.volume.setFov = function (deg)
-    FOV = FOV - (FOV - deg)/2
+    love.graphics.volume.fov = love.graphics.volume.fov - (love.graphics.volume.fov - deg)/2
 end
 love.graphics.volume.line = function(...)
     points = {...}
@@ -33,7 +34,7 @@ love.graphics.volume.point = function(x, y, z, color)
     local z2 = (x - cam.position.x) * -math.sin(cam.rotation.r1) + (z - cam.position.z) * math.cos(cam.rotation.r1)
     local z3 = (y - cam.position.y) * math.sin(cam.rotation.r2) + (z2) *  math.cos(cam.rotation.r2)
     local y2 = (y - cam.position.y) * math.cos(cam.rotation.r2) + (z2) * -math.sin(cam.rotation.r2)
-    local angleRadians = (FOV / 180) * math.pi
+    local angleRadians = (love.graphics.volume.fov / 180) * math.pi
     local result ={x2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2), y2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2)}
     love.graphics.setColor(color)
     if z3 >= 0 then
@@ -104,7 +105,7 @@ love.graphics.volume.initialize = function()
 end
 love.graphics.volume.terminate = function()
     for i, plane in ipairs(love.graphics.volume.pointsList) do 
-        love.graphics.setColor(plane.color)  
+        love.graphics.setColor(plane.color[1] - plane.color[1]*(plane.averageDistance/love.graphics.volume.renderDistance), plane.color[2] - plane.color[2]*(plane.averageDistance/love.graphics.volume.renderDistance), plane.color[3] - plane.color[3]*(plane.averageDistance/love.graphics.volume.renderDistance), plane.color[4])  
         if plane.mode == "fill" or plane.mode == "line" then
             love.graphics.polygon(plane.mode, plane.usedPoints)
         else
