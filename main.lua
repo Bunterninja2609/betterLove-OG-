@@ -16,9 +16,10 @@ function love.load()
     
     img = love.graphics.newImage("test.png")
     FPS = 130
+    tick = 0
 end
 function love.update(dt)
-    
+    tick = tick + dt
     FPS = FPS - math.floor((FPS - 1/dt)/2)
     if love.keyboard.isDown("d")then
         cam.position.z = cam.position.z + 1 * math.sin(cam.rotation.r1)
@@ -70,28 +71,27 @@ function love.mousemoved(x, y, dx, dy)
     elseif cam.rotation.r2 < -math.pi/2 then
         cam.rotation.r2 = -math.pi/2
     end
+    love.mouse.setPosition(love.graphics:getWidth()/2, love.graphics:getHeight()/2)
 end
 function love.draw()
     
     love.graphics.push()
     love.graphics.setBackgroundColor(0.5, 0.8, 1)
         love.graphics.volume.initialize()
+
+            love.graphics.volume.addLightSource(200*math.cos(tick), -200, 200*math.sin(tick), 400)
             love.graphics.setColor(1, 1, 1)
+            --love.graphics.volume.cuboid("fill", -100, -100, -100, 200, 200, 200)
+            ---[[
             for i = -10, 10 do
                 for j = -10, 10 do
-                    for k = -10, 10 do
-                        love.graphics.volume.cuboid("fill",i, j, k, 1, 1, 1)
-                    end
+                    love.graphics.volume.cuboid("fill", 20*i, -100, 20*j, 20, 20, 20)
                 end
             end
-            love.graphics.volume.cuboid("fill", -10, -10, -10, 20, 20, 20)
-            love.graphics.setColor(0, 1, 0)
-            love.graphics.setLineWidth(1)
-            love.graphics.volume.cuboid("line", -101, -101, -101, 202, 202, 202)
+            --]]
             love.graphics.volume.terminate()
     love.graphics.pop()
     
-    love.mouse.setPosition(love.graphics:getWidth()/2, love.graphics:getHeight()/2)
     love.graphics.points(love.mouse.getX(), love.mouse.getY())
     love.graphics.print(FPS.." fps",0,0)
 end

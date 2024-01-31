@@ -1,8 +1,10 @@
 love.graphics.volume = {}
 love.graphics.volume.fov = 60;
-love.graphics.volume.renderDistance = 200;
+love.graphics.volume.renderDistance = 2^128;
+love.graphics.volume.buffer = 100000;
 love.graphics.volume.pointsList = {}
 love.graphics.volume.resolution = 20
+love.graphics.volume.lightSources = {}
 love.math.convert3dTo2d = function(x, y, z)
     local x2 = (x - cam.position.x) * math.cos(cam.rotation.r1) + (z - cam.position.z) * math.sin(cam.rotation.r1)
     local z2 = (x - cam.position.x) * -math.sin(cam.rotation.r1) + (z - cam.position.z) * math.cos(cam.rotation.r1)
@@ -29,24 +31,12 @@ love.graphics.volume.line = function(...)
     end
         love.graphics.line(unpackedPoints)
 end
-love.graphics.volume.point = function(x, y, z, color)
-    local x2 = (x - cam.position.x) * math.cos(cam.rotation.r1) + (z - cam.position.z) * math.sin(cam.rotation.r1)
-    local z2 = (x - cam.position.x) * -math.sin(cam.rotation.r1) + (z - cam.position.z) * math.cos(cam.rotation.r1)
-    local z3 = (y - cam.position.y) * math.sin(cam.rotation.r2) + (z2) *  math.cos(cam.rotation.r2)
-    local y2 = (y - cam.position.y) * math.cos(cam.rotation.r2) + (z2) * -math.sin(cam.rotation.r2)
-    local angleRadians = (love.graphics.volume.fov / 180) * math.pi
-    local result ={x2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2), y2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2)}
-    love.graphics.setColor(color)
-    if z3 >= 0 then
-        love.graphics.points(result)
-    end
-end
 love.graphics.volume.cuboid = function(mode, x, y, z, width, height, depth)
     love.graphics.volume.plane(mode, x, y, z, x + width, y, z, x + width, y + height, z, x, y + height, z)
     love.graphics.volume.plane(mode, x, y, z + depth, x + width, y, z + depth, x + width, y + height, z + depth, x, y + height, z + depth)
-    love.graphics.volume.plane(mode, x, y, z, x, y, z + depth, x + width, y, z + depth, x + width, y, z )
-    love.graphics.volume.plane(mode, x, y + width, z, x, y + width, z + depth, x + width, y + width, z + depth, x + width, y + width, z )
-    love.graphics.volume.plane(mode, x + width, y, z, x + width, y, z + depth,   x + width, y + height, z + depth, x + width, y + height, z)
+    love.graphics.volume.plane(mode, x, y, z, x, y, z + depth, x + width, y, z + depth, x + width, y, z)
+    love.graphics.volume.plane(mode, x, y + width, z, x, y + width, z + depth, x + width, y + width, z + depth, x + width, y + width, z)
+    love.graphics.volume.plane(mode, x + width, y, z, x + width, y, z + depth, x + width, y + height, z + depth, x + width, y + height, z)
     love.graphics.volume.plane(mode, x, y, z, x, y, z + depth,   x, y + height, z + depth, x, y + height, z)
 end
 love.graphics.volume.plane = function (mode, ...)
@@ -56,22 +46,32 @@ love.graphics.volume.plane = function (mode, ...)
     local plane = {
         closestDistance = 2^128,
         averageDistance = 2^128,
+        averageLighting = 0,
         usedPoints = {},
         mode = mode,
         color = {love.graphics.getColor()}
     }
     local averageDistanceCollectionVariable = 0
+    local averageLightingCollectionvariable = 0
     for i = 1, #points, 3 do 
         local x1, y1, z1 = points[i], points[i + 1], points[i + 2]
-        if love.math.get3dDistance(x1, y1, z1) > 0 then
+        if love.math.get3dDistance(x1, y1, z1) > 0 and love.math.get3dDistance(x1, y1, z1) < love.graphics.volume.renderDistance and #love.graphics.volume.pointsList < love.graphics.volume.buffer then
             table.insert(usedPoints, love.math.convert3dTo2d(x1, y1, z1))
             if love.math.get3dDistance(x1, y1, z1) < plane.closestDistance then
                 plane.closestDistance = love.math.get3dDistance(x1, y1, z1)
             end
+            local highestLighting = (love.math.get3dDistance(x1, y1, z1, love.graphics.volume.lightSources[1].x, love.graphics.volume.lightSources[1].y, love.graphics.volume.lightSources[1].z)/love.graphics.volume.lightSources[1].strength)
+            for _, lightSource in ipairs(love.graphics.volume.lightSources) do
+                if (love.math.get3dDistance(x1, y1, z1, lightSource.x, lightSource.y, lightSource.z)/lightSource.strength) < highestLighting then
+                    highestLighting = (love.math.get3dDistance(x1, y1, z1, lightSource.x, lightSource.y, lightSource.z)/lightSource.strength)
+                end
+            end
+            averageLightingCollectionvariable = averageLightingCollectionvariable + highestLighting
             averageDistanceCollectionVariable = averageDistanceCollectionVariable + love.math.get3dDistance(x1, y1, z1)
         end
     end
     plane.averageDistance = averageDistanceCollectionVariable / #points
+    plane.averageLighting = averageLightingCollectionvariable / #points
     for _, point in ipairs(usedPoints) do
         table.insert(plane.usedPoints, point[1])
         table.insert(plane.usedPoints, point[2])
@@ -101,18 +101,28 @@ love.graphics.volume.plane = function (mode, ...)
 end
 love.graphics.volume.initialize = function()
     love.graphics.volume.pointsList = {}
+    love.graphics.volume.lightSources = {}
     love.graphics.translate(love.graphics:getWidth()/2, love.graphics:getHeight()/2)
 end
 love.graphics.volume.terminate = function()
     for i, plane in ipairs(love.graphics.volume.pointsList) do 
-        love.graphics.setColor(plane.color[1] - plane.color[1]*(plane.averageDistance/love.graphics.volume.renderDistance), plane.color[2] - plane.color[2]*(plane.averageDistance/love.graphics.volume.renderDistance), plane.color[3] - plane.color[3]*(plane.averageDistance/love.graphics.volume.renderDistance), plane.color[4])  
+        love.graphics.setColor(plane.color[1] - plane.color[1] * plane.averageLighting,plane.color[2] - plane.color[2] * plane.averageLighting, plane.color[3] - plane.color[3] * plane.averageLighting, plane.color[4])  
         if plane.mode == "fill" or plane.mode == "line" then
             love.graphics.polygon(plane.mode, plane.usedPoints)
         else
             love.graphics.draw(love.graphics.newSubdividedMesh(plane.mode, plane.usedPoints[1], plane.usedPoints[2],  plane.usedPoints[3], plane.usedPoints[4], plane.usedPoints[5], plane.usedPoints[6], plane.usedPoints[7], plane.usedPoints[8], 100), 0, 0)
         end
+        love.graphics.print(plane.averageLighting, plane.usedPoints[1], plane.usedPoints[2])
+    end
+    love.graphics.setColor(1, 1, 0)
+    for _, lightSource in ipairs(love.graphics.volume.lightSources) do
+        love.graphics.circle("fill", love.math.convert3dTo2d(lightSource.x, lightSource.y, lightSource.z)[1], love.math.convert3dTo2d(lightSource.x, lightSource.y, lightSource.z)[2], 10)
     end
     love.graphics.setColor(1, 1, 1)
+end
+love.graphics.volume.addLightSource = function(x, y, z, strength)
+    local lightSource = {x = x, y = y, z = z, strength = strength}
+    table.insert(love.graphics.volume.lightSources, lightSource)
 end
 love.math.get3dDistance = function(x1, y1, z1, x2, y2, z2)
     if not x2 then
@@ -121,6 +131,8 @@ love.math.get3dDistance = function(x1, y1, z1, x2, y2, z2)
         local z3 = (y1 - cam.position.y) * math.sin(cam.rotation.r2) + (z2) *  math.cos(cam.rotation.r2)
         local y2 = (y1 - cam.position.y) * math.cos(cam.rotation.r2) + (z2) * -math.sin(cam.rotation.r2)
         return z3
+    else
+        return math.sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2)
     end
 end
 
