@@ -5,6 +5,7 @@ love.graphics.volume.buffer = 2^256;
 love.graphics.volume.pointsList = {}
 love.graphics.volume.resolution = 20
 love.graphics.volume.lightSources = {}
+love.graphics.volume.savedShapes = {}
 love.math.convert3dTo2d = function(x, y, z)
     local x2 = (x - cam.position.x) * math.cos(cam.rotation.r1) + (z - cam.position.z) * math.sin(cam.rotation.r1)
     local z2 = (x - cam.position.x) * -math.sin(cam.rotation.r1) + (z - cam.position.z) * math.cos(cam.rotation.r1)
@@ -16,6 +17,17 @@ love.math.convert3dTo2d = function(x, y, z)
 end
 love.graphics.volume.setFov = function (deg)
     love.graphics.volume.fov = love.graphics.volume.fov - (love.graphics.volume.fov - deg)/2
+end
+love.graphics.volume.draw = function(object, x, y, z, scale)
+    for i, face in ipairs(object[2]) do
+        local points = {}
+        for j, info in ipairs(face) do
+            table.insert(points, object[1][info].x * scale + x)
+            table.insert(points, object[1][info].y * scale + y)
+            table.insert(points, object[1][info].z * scale + z)
+        end
+        love.graphics.volume.plane(object[3], points)
+    end
 end
 love.graphics.volume.line = function(...)
     points = {...}
@@ -38,6 +50,9 @@ love.graphics.volume.cuboid = function(mode, x, y, z, width, height, depth)
     love.graphics.volume.plane(mode, x, y + width, z, x, y + width, z + depth, x + width, y + width, z + depth, x + width, y + width, z)
     love.graphics.volume.plane(mode, x + width, y, z, x + width, y, z + depth, x + width, y + height, z + depth, x + width, y + height, z)
     love.graphics.volume.plane(mode, x, y, z, x, y, z + depth,   x, y + height, z + depth, x, y + height, z)
+end
+love.graphics.volume.sphere = function(mode, x, y, z, radius)
+    love.graphics.volume.draw(love.graphics.volume.savedShapes.sphere, x, y, z, radius)
 end
 love.graphics.volume.plane = function (mode, ...)
     if type(...) == "table" then
@@ -118,10 +133,12 @@ love.graphics.volume.terminate = function()
         end
     end
     love.graphics.setColor(1, 1, 0)
+    --[[
     for _, lightSource in ipairs(love.graphics.volume.lightSources) do
         love.graphics.circle("fill", love.math.convert3dTo2d(lightSource.x, lightSource.y, lightSource.z)[1], love.math.convert3dTo2d(lightSource.x, lightSource.y, lightSource.z)[2], 10)
     end
     love.graphics.setColor(1, 1, 1)
+    --]]
 end
 love.graphics.volume.addLightSource = function(x, y, z, strength)
     local lightSource = {x = x, y = y, z = z, strength = strength}
@@ -170,17 +187,8 @@ love.graphics.volume.newObj = function(file, mode)
         error("Invalid file format. please provide a .obj file")
     end
 end
-love.graphics.volume.draw = function(object, x, y, z, scale)
-    for i, face in ipairs(object[2]) do
-        local points = {}
-        for j, info in ipairs(face) do
-            table.insert(points, object[1][info].x * scale + x)
-            table.insert(points, object[1][info].y * scale + y)
-            table.insert(points, object[1][info].z * scale + z)
-        end
-        love.graphics.volume.plane(object[3], points)
-    end
-end
+love.graphics.volume.savedShapes.sphere = love.graphics.volume.newObj("sphere.obj", "fill")
+
 cam = {}
 cam.position = {x = 0, y = 0, z = 0}
 cam.rotation = {r1 = 0, r2 = 0}

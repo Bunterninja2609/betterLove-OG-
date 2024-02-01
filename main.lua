@@ -1,5 +1,5 @@
 --[[
-This file provides basic example functions needed to develop a 3d game using the following librarys:
+    This file provides basic example functions needed to develop a 3d game using the following librarys:
     - betterMesh
     - love3d
     - betterMath
@@ -86,13 +86,16 @@ function love.draw()
             
             --love.graphics.volume.cuboid("fill", -100, -100, -100, 200, 200, 200)
             ---[[
-            for i = -2, 1 do
-                for j = -2, 1 do
+            for i = -10, 9 do
+                for j = -10, 9 do
                     love.graphics.volume.cuboid("fill", 20*i, 0, 20*j, 20, 20, 20)
                 end
             end
             --]]
-            love.graphics.volume.draw(object1, 0, -100, 0, 100)
+            love.graphics.volume.sphere("line", 0, 100, 0, 100)
+            love.graphics.setColor(1, 1, 0)
+            love.graphics.volume.sphere("line", 200*math.cos(tick), 0, 200*math.sin(tick), 10)
+            --love.graphics.volume.draw(object1, 0, -100, 0, 100)
             love.graphics.volume.terminate()
     love.graphics.pop()
     
