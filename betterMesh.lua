@@ -2,6 +2,10 @@ love.graphics.newSubdividedMesh = function(texture, x1, y1, x2, y2, x3, y3, x4, 
     if not subdivisions then
         subdivisions = 1
     end
+    if not x4 then
+        x4 = x1
+        y4 = y1
+    end
     local vertices = {}
     for i = 0, subdivisions do
         local vertice = {x1 + i*((x2 - x1)/subdivisions), y1 + i*((y2 - y1)/subdivisions), i*(1/subdivisions), 0}
@@ -16,8 +20,7 @@ love.graphics.newSubdividedMesh = function(texture, x1, y1, x2, y2, x3, y3, x4, 
         table.insert(vertices, vertice)
     end
     for i = 0, subdivisions do
-        local vertice = {x4 + i*((x1 - x4)/subdivisions), y4 + i*((y1 - y4)/subdivisions), 0, 1 - i*(1/subdivisions)}
-        table.insert(vertices, vertice)
+        
     end
     local mesh = love.graphics.newMesh(vertices, "fan", "dynamic")
     

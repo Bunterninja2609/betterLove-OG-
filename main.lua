@@ -15,13 +15,13 @@ function love.load()
     love.mouse.setVisible(false)
     
     img = love.graphics.newImage("test.png")
-    object1 = love.graphics.volume.newObj("untitled.obj", "fill")
-    FPS = 130
+    suzanne = love.graphics.volume.newObj("suzanne.obj", "fill")
+    FPS = 0
     tick = 0
-    gdt = 0
+    gDt = 0
 end
 function love.update(dt)
-    gdt = dt
+    gDt = dt
     tick = tick + dt
     FPS = FPS - math.floor((FPS - 1/dt)/2)
     if love.keyboard.isDown("d")then
@@ -62,12 +62,12 @@ end
 function love.mousemoved(x, y, dx, dy)
     if love.mouse.isDown(2) then
         love.graphics.volume.setFov(40)
-        cam.rotation.r2 = cam.rotation.r2 + dy/6400
-        cam.rotation.r1 = cam.rotation.r1 - dx/6400
+        cam.rotation.r2 = cam.rotation.r2 + gDt*dy/400
+        cam.rotation.r1 = cam.rotation.r1 - gDt*dx/400
     else 
         love.graphics.volume.setFov(60)
-        cam.rotation.r2 = cam.rotation.r2 + dy/400
-        cam.rotation.r1 = cam.rotation.r1 - dx/400
+        cam.rotation.r2 = cam.rotation.r2 + gDt*dy/100
+        cam.rotation.r1 = cam.rotation.r1 - gDt*dx/100
     end
     if cam.rotation.r2 > math.pi/2 then
         cam.rotation.r2 = math.pi/2
@@ -80,25 +80,31 @@ function love.draw()
     love.graphics.push()
     love.graphics.setBackgroundColor(0.5, 0.8, 1)
         love.graphics.volume.initialize()
-            
-            love.graphics.volume.addLightSource(200*math.cos(tick), 0, 200*math.sin(tick), 150)
+
+            -- setting the color works the exact same as in normal love
+            love.graphics.setColor(1, 1, 0)
+            --adding a lightSource with the parameters x, y, z, strength
+            love.graphics.volume.addLightSource(200*math.cos(tick), -20, 200*math.sin(tick), 150)
+            --visualizing the light Source with a sphere (mode, x, y, z, radius)
+            love.graphics.volume.sphere("line", 200*math.cos(tick), -20, 200*math.sin(tick), 10)
             love.graphics.setColor(1, 1, 1)
             
-            --love.graphics.volume.cuboid("fill", -100, -100, -100, 200, 200, 200)
             ---[[
             for i = -10, 9 do
                 for j = -10, 9 do
-                    love.graphics.volume.cuboid("fill", 20*i, 0, 20*j, 20, 20, 20)
+                    love.graphics.volume.cuboid("fill",20*i, 0, 20*j, 20, 20, 20)
                 end
             end
+            love.graphics.volume.cuboid(img, math.cos(tick)*20, -30, 20, 10, 10, 10)
             --]]
-            love.graphics.volume.sphere("line", 0, 100, 0, 100)
-            love.graphics.setColor(1, 1, 0)
-            love.graphics.volume.sphere("line", 200*math.cos(tick), 0, 200*math.sin(tick), 10)
-            --love.graphics.volume.draw(object1, 0, -100, 0, 100)
+            
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.volume.draw("line", suzanne, 0, -100, -300, 100)
+            love.graphics.setColor(1, 1, 1)
+            --terminate ends the 3d view and renders everything
             love.graphics.volume.terminate()
     love.graphics.pop()
-    
+    -- place for GUI
     love.graphics.points(love.mouse.getX(), love.mouse.getY())
     love.graphics.print(FPS.." fps",0,0)
 end

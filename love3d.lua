@@ -18,7 +18,7 @@ end
 love.graphics.volume.setFov = function (deg)
     love.graphics.volume.fov = love.graphics.volume.fov - (love.graphics.volume.fov - deg)/2
 end
-love.graphics.volume.draw = function(object, x, y, z, scale)
+love.graphics.volume.draw = function(mode, object, x, y, z, scale)
     for i, face in ipairs(object[2]) do
         local points = {}
         for j, info in ipairs(face) do
@@ -26,7 +26,7 @@ love.graphics.volume.draw = function(object, x, y, z, scale)
             table.insert(points, object[1][info].y * scale + y)
             table.insert(points, object[1][info].z * scale + z)
         end
-        love.graphics.volume.plane(object[3], points)
+        love.graphics.volume.plane(mode, points)
     end
 end
 love.graphics.volume.line = function(...)
@@ -52,7 +52,7 @@ love.graphics.volume.cuboid = function(mode, x, y, z, width, height, depth)
     love.graphics.volume.plane(mode, x, y, z, x, y, z + depth,   x, y + height, z + depth, x, y + height, z)
 end
 love.graphics.volume.sphere = function(mode, x, y, z, radius)
-    love.graphics.volume.draw(love.graphics.volume.savedShapes.sphere, x, y, z, radius)
+    love.graphics.volume.draw(mode, love.graphics.volume.savedShapes.sphere, x, y, z, radius)
 end
 love.graphics.volume.plane = function (mode, ...)
     if type(...) == "table" then
@@ -128,7 +128,7 @@ love.graphics.volume.terminate = function()
         love.graphics.setColor(plane.color[1] - plane.color[1] * plane.averageLighting,plane.color[2] - plane.color[2] * plane.averageLighting, plane.color[3] - plane.color[3] * plane.averageLighting, plane.color[4])  
         if plane.mode == "fill" or plane.mode == "line" then
             love.graphics.polygon(plane.mode, plane.usedPoints)
-        else
+        elseif plane.usedPoints[6] then
             love.graphics.draw(love.graphics.newSubdividedMesh(plane.mode, plane.usedPoints[1], plane.usedPoints[2],  plane.usedPoints[3], plane.usedPoints[4], plane.usedPoints[5], plane.usedPoints[6], plane.usedPoints[7], plane.usedPoints[8], 100), 0, 0)
         end
     end
