@@ -15,7 +15,7 @@ function love.load()
     love.mouse.setVisible(false)
     
     img = love.graphics.newImage("test.png")
-    object = love.graphics.volume.newObj("untitled.obj")
+    object1 = love.graphics.volume.newObj("untitled.obj", "fill")
     FPS = 130
     tick = 0
     gdt = 0
@@ -86,13 +86,13 @@ function love.draw()
             
             --love.graphics.volume.cuboid("fill", -100, -100, -100, 200, 200, 200)
             ---[[
-            for i = -10, 10 do
-                for j = -10, 10 do
+            for i = -2, 1 do
+                for j = -2, 1 do
                     love.graphics.volume.cuboid("fill", 20*i, 0, 20*j, 20, 20, 20)
                 end
             end
             --]]
-            love.graphics.volume.draw(object, 0, -100, 0, 100)
+            love.graphics.volume.draw(object1, 0, -100, 0, 100)
             love.graphics.volume.terminate()
     love.graphics.pop()
     

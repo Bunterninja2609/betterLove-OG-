@@ -138,7 +138,7 @@ love.math.get3dDistance = function(x1, y1, z1, x2, y2, z2)
         return math.sqrt((x2-x1)^2+(y2-y1)^2+(z2-z1)^2)
     end
 end
-love.graphics.volume.newObj = function(file)
+love.graphics.volume.newObj = function(file, mode)
     if string.lower(string.match(file, "%.obj$")) ~= nil then
         local vertices = {}
         local faces = {}
@@ -165,7 +165,7 @@ love.graphics.volume.newObj = function(file)
                 end
             end
         end
-        return {vertices, faces}
+        return {vertices, faces, mode}
     else
         error("Invalid file format. please provide a .obj file")
     end
@@ -178,10 +178,9 @@ love.graphics.volume.draw = function(object, x, y, z, scale)
             table.insert(points, object[1][info].y * scale + y)
             table.insert(points, object[1][info].z * scale + z)
         end
-        love.graphics.volume.plane("fill", points)
+        love.graphics.volume.plane(object[3], points)
     end
 end
 cam = {}
 cam.position = {x = 0, y = 0, z = 0}
 cam.rotation = {r1 = 0, r2 = 0}
-
