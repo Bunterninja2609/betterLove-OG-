@@ -19,6 +19,29 @@ function love.load()
     FPS = 0
     tick = 0
     gDt = 0
+
+    
+            -- setting the color works the exact same as in normal love
+            love.graphics.setColor(1, 1, 0)
+            --adding a lightSource with the parameters x, y, z, strength
+            love.graphics.volume.addLightSource(200*math.cos(tick), -20, 200*math.sin(tick), 150)
+            --visualizing the light Source with a sphere (mode, x, y, z, radius)
+            love.graphics.volume.sphere("line", 200*math.cos(tick), -20, 200*math.sin(tick), 10)
+            love.graphics.setColor(1, 1, 1)
+            
+            ---[[
+            for i = -10, 9 do
+                for j = -10, 9 do
+                    love.graphics.volume.cuboid("fill",20*i, 0, 20*j, 20, 20, 20)
+                end
+            end
+            love.graphics.volume.cuboid(img, math.cos(tick)*20, -30, 20, 10, 10, 10)
+            --]]
+            
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.volume.draw("fill", suzanne, 0, -100, -300, 100)
+            love.graphics.setColor(1, 1, 1)
+            --terminate ends the 3d view and renders everything
 end
 function love.update(dt)
     gDt = dt
@@ -81,27 +104,6 @@ function love.draw()
     love.graphics.setBackgroundColor(0.5, 0.8, 1)
         love.graphics.volume.initialize()
 
-            -- setting the color works the exact same as in normal love
-            love.graphics.setColor(1, 1, 0)
-            --adding a lightSource with the parameters x, y, z, strength
-            love.graphics.volume.addLightSource(200*math.cos(tick), -20, 200*math.sin(tick), 150)
-            --visualizing the light Source with a sphere (mode, x, y, z, radius)
-            love.graphics.volume.sphere("line", 200*math.cos(tick), -20, 200*math.sin(tick), 10)
-            love.graphics.setColor(1, 1, 1)
-            
-            ---[[
-            for i = -10, 9 do
-                for j = -10, 9 do
-                    love.graphics.volume.cuboid("fill",20*i, 0, 20*j, 20, 20, 20)
-                end
-            end
-            love.graphics.volume.cuboid(img, math.cos(tick)*20, -30, 20, 10, 10, 10)
-            --]]
-            
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.volume.draw("line", suzanne, 0, -100, -300, 100)
-            love.graphics.setColor(1, 1, 1)
-            --terminate ends the 3d view and renders everything
             love.graphics.volume.terminate()
     love.graphics.pop()
     -- place for GUI

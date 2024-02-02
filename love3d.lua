@@ -2,7 +2,7 @@ love.graphics.volume = {}
 love.graphics.volume.fov = 60;
 love.graphics.volume.renderDistance = 2^128;
 love.graphics.volume.buffer = 2^256;
-love.graphics.volume.pointsList = {}
+love.graphics.volume.planeList = {}
 love.graphics.volume.resolution = 20
 love.graphics.volume.lightSources = {}
 love.graphics.volume.savedShapes = {}
@@ -13,7 +13,11 @@ love.math.convert3dTo2d = function(x, y, z)
     local y2 = (y - cam.position.y) * math.cos(cam.rotation.r2) + (z2) * -math.sin(cam.rotation.r2)
     local angleRadians = (love.graphics.volume.fov / 180) * math.pi
     local result ={x2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2), y2 / (z3 * math.tan(angleRadians/2))*(love.graphics:getWidth()/2)}
-    return result
+    if z3 < 0 then
+        return nil
+    else
+        return result
+    end
 end
 love.graphics.volume.setFov = function (deg)
     love.graphics.volume.fov = love.graphics.volume.fov - (love.graphics.volume.fov - deg)/2
@@ -55,82 +59,39 @@ love.graphics.volume.sphere = function(mode, x, y, z, radius)
     love.graphics.volume.draw(mode, love.graphics.volume.savedShapes.sphere, x, y, z, radius)
 end
 love.graphics.volume.plane = function (mode, ...)
-    if type(...) == "table" then
-        points = ...
-    else 
-        points = {...}
-    end
-    local convertedPoints = {}
-    local usedPoints = {}
     local plane = {
-        closestDistance = 2^128,
-        averageDistance = 2^128,
-        averageLighting = 0,
-        usedPoints = {},
         mode = mode,
         color = {love.graphics.getColor()}
     }
-    local averageDistanceCollectionVariable = 0
-    local averageLightingCollectionvariable = 0
-    for i = 1, #points, 3 do 
-        local x1, y1, z1 = points[i], points[i + 1], points[i + 2]
-        if love.math.get3dDistance(x1, y1, z1) > 0 and love.math.get3dDistance(x1, y1, z1) < love.graphics.volume.renderDistance and #love.graphics.volume.pointsList < love.graphics.volume.buffer then
-            table.insert(usedPoints, love.math.convert3dTo2d(x1, y1, z1))
-            if love.math.get3dDistance(x1, y1, z1) < plane.closestDistance then
-                plane.closestDistance = love.math.get3dDistance(x1, y1, z1)
-            end
-            local highestLighting = (love.math.get3dDistance(x1, y1, z1, love.graphics.volume.lightSources[1].x, love.graphics.volume.lightSources[1].y, love.graphics.volume.lightSources[1].z)/love.graphics.volume.lightSources[1].strength)
-            for _, lightSource in ipairs(love.graphics.volume.lightSources) do
-                if (love.math.get3dDistance(x1, y1, z1, lightSource.x, lightSource.y, lightSource.z)/lightSource.strength) < highestLighting then
-                    highestLighting = (love.math.get3dDistance(x1, y1, z1, lightSource.x, lightSource.y, lightSource.z)/lightSource.strength)
-                end
-            end
-            averageLightingCollectionvariable = averageLightingCollectionvariable + highestLighting
-            averageDistanceCollectionVariable = averageDistanceCollectionVariable + love.math.get3dDistance(x1, y1, z1)
-        end
+    if type(...) == "table" then
+        plane.points = ...
+    else 
+        plane.points = {...}
     end
-    plane.averageDistance = averageDistanceCollectionVariable / #points
-    plane.averageLighting = averageLightingCollectionvariable / #points
-    for _, point in ipairs(usedPoints) do
-        table.insert(plane.usedPoints, point[1])
-        table.insert(plane.usedPoints, point[2])
-    end
-    
-    if #plane.usedPoints >= 6 then
-        if #love.graphics.volume.pointsList > 0 then
-            local t = false
-            for i, otherPlanes in ipairs(love.graphics.volume.pointsList) do
-                if otherPlanes.closestDistance < plane.closestDistance then
-                    table.insert(love.graphics.volume.pointsList, i, plane)
-                    t = true
-                    break
-                elseif otherPlanes.averageDistance < plane.averageDistance then
-                    table.insert(love.graphics.volume.pointsList, i, plane)
-                    t = true
-                    break
-                end
-            end
-            if not t then
-                table.insert(love.graphics.volume.pointsList, plane)
-            end
-        else
-            table.insert(love.graphics.volume.pointsList, plane)
-        end
+    if #plane.points >= 9 then
+        table.insert(love.graphics.volume.planeList, plane)
     end
 end
 love.graphics.volume.initialize = function()
-    love.graphics.volume.pointsList = {}
     love.graphics.volume.lightSources = {}
     love.graphics.translate(love.graphics:getWidth()/2, love.graphics:getHeight()/2)
 end
 love.graphics.volume.terminate = function()
-    for i, plane in ipairs(love.graphics.volume.pointsList) do 
-        love.graphics.setColor(plane.color[1] - plane.color[1] * plane.averageLighting,plane.color[2] - plane.color[2] * plane.averageLighting, plane.color[3] - plane.color[3] * plane.averageLighting, plane.color[4])  
-        if plane.mode == "fill" or plane.mode == "line" then
-            love.graphics.polygon(plane.mode, plane.usedPoints)
-        elseif plane.usedPoints[6] then
-            love.graphics.draw(love.graphics.newSubdividedMesh(plane.mode, plane.usedPoints[1], plane.usedPoints[2],  plane.usedPoints[3], plane.usedPoints[4], plane.usedPoints[5], plane.usedPoints[6], plane.usedPoints[7], plane.usedPoints[8], 100), 0, 0)
+    local queue = {}
+    for i, plane in ipairs(love.graphics.volume.planeList) do
+        local points = {}
+        for i = 1, #plane.points, 3 do
+            if love.math.convert3dTo2d(plane.points[i], plane.points[i+1], plane.points[i+2]) then
+                table.insert(points, love.math.convert3dTo2d(plane.points[i], plane.points[i+1], plane.points[i+2])[1])
+                table.insert(points, love.math.convert3dTo2d(plane.points[i], plane.points[i+1], plane.points[i+2])[2])
+            end
         end
+        if #points >= 6 then
+            table.insert(queue, points)
+        end
+    end
+    for i, points in ipairs(queue) do
+        love.graphics.polygon("fill", points)
     end
     love.graphics.setColor(1, 1, 0)
     --[[
