@@ -2,7 +2,7 @@ love.graphics.volume = {}
 love.graphics.volume.fov = 60;
 love.graphics.volume.renderDistance = 2^128;
 love.graphics.volume.buffer = 2^256;
-love.graphics.volume.pointsList = {}
+love.graphics.volume.planeList = {}
 love.graphics.volume.resolution = 20
 love.graphics.volume.lightSources = {}
 love.graphics.volume.savedShapes = {}
@@ -74,7 +74,7 @@ love.graphics.volume.plane = function (mode, ...)
     local averageLightingCollectionvariable = 0
     for i = 1, #points, 3 do 
         local x1, y1, z1 = points[i], points[i + 1], points[i + 2]
-        if love.math.get3dDistance(x1, y1, z1) > 0 and love.math.get3dDistance(x1, y1, z1) < love.graphics.volume.renderDistance and #love.graphics.volume.pointsList < love.graphics.volume.buffer then
+        if love.math.get3dDistance(x1, y1, z1) > 0 and love.math.get3dDistance(x1, y1, z1) < love.graphics.volume.renderDistance and #love.graphics.volume.planeList < love.graphics.volume.buffer then
             table.insert(usedPoints, love.math.convert3dTo2d(x1, y1, z1))
             if love.math.get3dDistance(x1, y1, z1) < plane.closestDistance then
                 plane.closestDistance = love.math.get3dDistance(x1, y1, z1)
@@ -97,34 +97,34 @@ love.graphics.volume.plane = function (mode, ...)
     end
     
     if #plane.usedPoints >= 6 then
-        if #love.graphics.volume.pointsList > 0 then
+        if #love.graphics.volume.planeList > 0 then
             local t = false
-            for i, otherPlanes in ipairs(love.graphics.volume.pointsList) do
+            for i, otherPlanes in ipairs(love.graphics.volume.planeList) do
                 if otherPlanes.closestDistance < plane.closestDistance then
-                    table.insert(love.graphics.volume.pointsList, i, plane)
+                    table.insert(love.graphics.volume.planeList, i, plane)
                     t = true
                     break
                 elseif otherPlanes.averageDistance < plane.averageDistance then
-                    table.insert(love.graphics.volume.pointsList, i, plane)
+                    table.insert(love.graphics.volume.planeList, i, plane)
                     t = true
                     break
                 end
             end
             if not t then
-                table.insert(love.graphics.volume.pointsList, plane)
+                table.insert(love.graphics.volume.planeList, plane)
             end
         else
-            table.insert(love.graphics.volume.pointsList, plane)
+            table.insert(love.graphics.volume.planeList, plane)
         end
     end
 end
 love.graphics.volume.initialize = function()
-    love.graphics.volume.pointsList = {}
+    love.graphics.volume.planeList = {}
     love.graphics.volume.lightSources = {}
     love.graphics.translate(love.graphics:getWidth()/2, love.graphics:getHeight()/2)
 end
 love.graphics.volume.terminate = function()
-    for i, plane in ipairs(love.graphics.volume.pointsList) do 
+    for i, plane in ipairs(love.graphics.volume.planeList) do 
         love.graphics.setColor(plane.color[1] - plane.color[1] * plane.averageLighting,plane.color[2] - plane.color[2] * plane.averageLighting, plane.color[3] - plane.color[3] * plane.averageLighting, plane.color[4])  
         if plane.mode == "fill" or plane.mode == "line" then
             love.graphics.polygon(plane.mode, plane.usedPoints)

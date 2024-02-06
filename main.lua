@@ -99,7 +99,7 @@ function love.draw()
             --]]
             
             love.graphics.setColor(1, 1, 1)
-            love.graphics.volume.draw("line", suzanne, 0, -100, -300, 100)
+            love.graphics.volume.draw("fill", suzanne, 0, -100, -300, 100)
             love.graphics.setColor(1, 1, 1)
             --terminate ends the 3d view and renders everything
             love.graphics.volume.terminate()
